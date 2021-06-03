@@ -211,6 +211,15 @@ class oci_native_moodle_database extends moodle_database {
         $stmt = $this->parse_query($sql);
         $result = oci_execute($stmt, $this->commit_status);
         $this->query_end($result, $stmt);
+        
+        // workaround for ORA-01722 SQL error “ORA-01722: invalid number”
+		$sql1 = "ALTER SESSION SET NLS_NUMERIC_CHARACTERS='.,'";
+		$this->query_start($sql1, null, SQL_QUERY_UPDATE);
+		$stmt1 = $this->parse_query($sql1);
+		$result = oci_execute($stmt1, $this->commit_status);
+		$this->query_end($result, $stmt1);
+		oci_free_statement($stmt1);
+        
         $records = null;
         oci_fetch_all($stmt, $records, 0, -1, OCI_FETCHSTATEMENT_BY_ROW);
         oci_free_statement($stmt);
